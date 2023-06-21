@@ -1,8 +1,10 @@
 const asyncHandler = require('express-async-handler')
 const User = require('../modals/userModel.js')
+const dotenv = require('dotenv').config()
+var jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-module.exports.getUsers = async (req, res) => {
+module.exports.loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     // Find the user by email
@@ -20,18 +22,32 @@ module.exports.getUsers = async (req, res) => {
 
     // Password is valid, user is authenticated
     res.status(200).json({ message: 'Login successful', user });
+    return next();
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 
-module.exports.addUsers = async (req, res) => {
+module.exports.registerUser = async (req, res) => {
   const {v_id, name, email, password} = req.body;
+
+  const token = jwt.sign({
+    email: email,
+    name :name
+   }, process.env.Secret, {
+    expiresIn : "30d"
+   })
+
+
   const user = await User.create({
     v_id, name, email, password
+  }).then((data)=>{
+    res.json({
+      message : "User Created",
+      token : token
+    })
   })
-  res.status(201).json(user)
 };
 
 module.exports.updateUser = async (req, res) => {
