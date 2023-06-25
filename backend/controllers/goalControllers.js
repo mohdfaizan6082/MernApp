@@ -3,8 +3,18 @@ const Goal = require('../modals/goalModel.js')
 
 
 module.exports.getGoals = async (req, res) => {
-  const goals = await Goal.find();
+  // const goals = await Goal.find().populate('user');
+  // res.status(200).json(goals);
+
+  try {
+    const goals = await Goal.find({user : req.user._id}).populate('user');
+if (!goals) {
+  return res.status(404).json({ message: 'Goal not found' });
+}
   res.status(200).json(goals);
+  } catch (error) {
+    return res.status(500).json({ message: 'An error occurred while updating the goal' });
+  }
 };
 
 module.exports.getGoalsById = async (req, res) => {
@@ -24,6 +34,7 @@ if (!goals) {
 module.exports.addGoals = async (req, res) => {
   const { v_id, title } = req.body;
   const goal = await Goal.create({
+    user : req.user._id,
     v_id: req.body.v_id,
     title: req.body.title
   })

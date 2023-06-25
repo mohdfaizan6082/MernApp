@@ -20,8 +20,16 @@ module.exports.loginUser = async (req, res, next) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
+const payload = {
+  userId: user._id,
+};
+
+const secretKey = process.env.SECRET;
+
+const token = jwt.sign(payload, secretKey);
+
     // Password is valid, user is authenticated
-    res.status(200).json({ message: 'Login successful', user });
+    res.status(200).json({ message: 'Login successful', user, token });
     return next();
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
@@ -32,23 +40,19 @@ module.exports.loginUser = async (req, res, next) => {
 module.exports.registerUser = async (req, res) => {
   const {v_id, name, email, password} = req.body;
 
-  const token = jwt.sign({
-    email: email,
-    name :name
-   }, process.env.Secret, {
-    expiresIn : "30d"
-   })
-
-
   const user = await User.create({
     v_id, name, email, password
-  }).then((data)=>{
-    res.json({
-      message : "User Created",
-      token : token
+  });
+
+  if(user){
+    res.status(201).json({
+      user
     })
-  })
-};
+  }
+    else{
+      res.status(400).send("Something went wrong");
+    }
+  };
 
 module.exports.updateUser = async (req, res) => {
   try {
@@ -88,5 +92,36 @@ module.exports.deleteUser = async (req, res) => {
   }
 };
 
+
+module.exports.getUser = async (req,res,next)=>{
+
+  try {
+    const { email, password } = req.body;
+    // Find the user by email
+
+    const user = await User.findOne(req.user._id);
+    // Check if the user exists
+    // if (req.user._id !== user._id) {
+    //   return res.status(401).json({ error: 'No Record found' });
+    // }
+    // Validate the password using bcrypt
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    // Check if the password is valid
+    // if (!isValidPassword) {
+    //   return res.status(401).json({ error: 'Invalid email or password' });
+    // }
+
+    // Password is valid, user is authenticated
+    if(user._id == req.user._id){
+    res.status(200).json({   user });
+    }
+    else{
+      res.status(400).json({ Response: 'User Not Found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Internal API error' });
+  }
+
+}
 
 

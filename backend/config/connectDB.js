@@ -4,7 +4,7 @@ const Db_Password = process.env.DB_PASSWORD;
 
 module.exports.connectDB = async () => {
   try {
-    await mongoose.connect(`mongodb+srv://${Db_Name}:${Db_Password}@cluster0.rnnwrby.mongodb.net/MernApp?retryWrites=true&w=majority`, {
+    await mongoose.connect(`mongodb+srv://projectDataBase:projectDataBase@cluster0.jx7sfpo.mongodb.net/MernApp`, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

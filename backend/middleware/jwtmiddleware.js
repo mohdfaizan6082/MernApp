@@ -1,9 +1,10 @@
 const jwt = require("jsonwebtoken");
 const parseToken = require("parse-access-token").default
+const User = require('../modals/userModel.js')
 const dotenv = require('dotenv').config()
 const config = process.env;
 
-module.exports.verifyToken = (req, res, next) => {
+module.exports.verifyToken = async (req, res, next) => {
 //   const token =
 //     req.body.token || req.query.token || req.headers["x-access-token"] || req.headers.authorization.split("Bearer ")[1];
 const token = parseToken(req)
@@ -13,7 +14,8 @@ const token = parseToken(req)
   }
   try {
     const decoded = jwt.verify(token, config.SECRET);
-    req.user = decoded;
+    req.user = await User.findById(decoded.userId).select('-passeword');
+    console.log(req.user)
   } catch (err) {
     return res.status(401).send("Invalid Token");
   }
